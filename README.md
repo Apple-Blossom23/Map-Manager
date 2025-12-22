@@ -27,16 +27,15 @@ psql -U postgres
 \i schema_postgresql.sql
 ```
 
-### 配置文件
+### 环境变量配置
 
-修改 `src/main/resources/application-dev.yml`:
+复制环境变量示例文件并重命名：
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/workshop_db
-    username: your_username
-    password: your_password
+```bash
+# 复制示例文件
+cp .env.example .env
+
+# 编辑 .env 文件，修改数据库连接等配置
 ```
 
 ### 运行项目
@@ -45,15 +44,16 @@ spring:
 # 安装依赖
 mvn clean install
 
-# 运行开发环境
+# 确保 .env 文件已配置完成
+# 然后运行开发环境
 mvn spring-boot:run
 
 # 或打包后运行
 mvn clean package
-java -jar target/map-workshop-backend-1.0.0.jar
+java -jar target/map-workshop-backend-1.0.0.jar --spring.profiles.active=dev
 ```
 
-服务将在 `http://localhost:8080/api` 启动。
+服务默认将在 `http://localhost:8080` 启动，API路径默认为 `/api`。
 
 ## API 文档
 
