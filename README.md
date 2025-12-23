@@ -1,6 +1,6 @@
 # Map Workshop Backend
 
-基于 Java 21 + Spring Boot 3.2 + PostgreSQL 的地图工坊后端服务。
+基于 Java 21 + Spring Boot 3.5.2 + PostgreSQL 的地图工坊后端服务。
 
 ## 技术栈
 
