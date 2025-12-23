@@ -5,7 +5,7 @@
 ## 技术栈
 
 - **Java 21** - LTS 版本
-- **Spring Boot 3.2.1** - 企业级框架
+- **Spring Boot 3.5.2** - 企业级框架
 - **PostgreSQL 15+** - 关系型数据库
 - **Spring Data JPA** - ORM 框架
 - **Spring Security + JWT** - 认证授权
