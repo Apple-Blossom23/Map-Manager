@@ -36,6 +36,8 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll()
+                .requestMatchers("/user/avatar/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/creator/**").hasAnyRole("CREATOR", "ADMIN")
                 .requestMatchers("/user/**").authenticated()
