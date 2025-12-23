@@ -1,21 +1,15 @@
 package com.workshop.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.workshop.entity.SystemConfig;
 import com.workshop.repository.SystemConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class SystemConfigService {
     
     private final SystemConfigRepository systemConfigRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    
     public boolean isRegistrationEnabled() {
         return getBooleanConfig("registration_enabled", true);
     }
