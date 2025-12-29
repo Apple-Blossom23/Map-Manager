@@ -1,11 +1,11 @@
 # Map Workshop Backend
 
-基于 Java 21 + Spring Boot 3.5.2 + PostgreSQL 的地图工坊后端服务。
+基于 Java 21 + Spring Boot 3.5.9 + PostgreSQL 的地图工坊后端服务。
 
 ## 技术栈
 
 - **Java 21** - LTS 版本
-- **Spring Boot 3.5.2** - 企业级框架
+- **Spring Boot 3.5.9** - 企业级框架
 - **PostgreSQL 15+** - 关系型数据库
 - **Spring Data JPA** - ORM 框架
 - **Spring Security + JWT** - 认证授权
@@ -247,7 +247,3 @@ java -jar target/map-workshop-backend-1.0.0.jar --spring.profiles.active=dev
 - [ ] 定时任务 (每日重置、SMTP 计数重置)
 - [ ] 举报功能
 - [ ] 通知系统
-
-## 许可证
-
-MIT
