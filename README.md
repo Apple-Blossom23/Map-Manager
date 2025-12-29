@@ -55,85 +55,198 @@ java -jar target/map-workshop-backend-1.0.0.jar --spring.profiles.active=dev
 
 服务默认将在 `http://localhost:8080` 启动，API路径默认为 `/api`。
 
-## API 文档
-
-### 认证接口
-
-#### 注册
-```http
-POST /api/auth/register
-Content-Type: application/json
-
-{
-  "username": "testuser",
-  "nickname": "测试用户",
-  "email": "test@example.com",
-  "password": "password123",
-  "inviteCode": "ABC12345"
-}
-```
-
-#### 登录
-```http
-POST /api/auth/login
-Content-Type: application/json
-
-{
-  "usernameOrEmail": "testuser",
-  "password": "password123"
-}
-```
-
-响应:
-```json
-{
-  "code": 200,
-  "message": "登录成功",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "type": "Bearer",
-    "userId": 1,
-    "username": "testuser",
-    "role": "USER"
-  }
-}
-```
-
-### 认证请求
-
-后续请求需要在 Header 中携带 Token:
-
-```http
-Authorization: Bearer <your_token>
-```
 
 ## 项目结构
 
 ```
-src/main/java/com/workshop/
-├── config/           # 配置类 (Security, CORS)
-├── controller/       # REST 控制器
-├── service/          # 业务逻辑层
-├── repository/       # 数据访问层
-├── entity/           # JPA 实体类
-├── dto/              # 数据传输对象
-├── security/         # 安全相关 (JWT)
-├── exception/        # 异常处理
-└── util/             # 工具类
+├── pom.xml                                    # Maven 依赖配置
+├── src/main/
+│   ├── java/com/workshop/
+│   │   ├── WorkshopApplication.java          # Spring Boot 启动类
+│   │   ├── config/
+│   │   │   └── SecurityConfig.java           # Spring Security + CORS 配置
+│   │   ├── controller/
+│   │   │   └── AuthController.java           # 认证控制器 (注册/登录)
+│   │   ├── service/
+│   │   │   ├── AuthService.java              # 认证业务逻辑
+│   │   │   ├── TransactionService.java       # 经济系统服务
+│   │   │   └── SystemConfigService.java      # 系统配置服务
+│   │   ├── repository/
+│   │   │   ├── UserRepository.java           # 用户数据访问
+│   │   │   ├── MapRepository.java            # 地图数据访问
+│   │   │   ├── TransactionRepository.java    # 交易记录访问
+│   │   │   ├── DailyTaskLogRepository.java   # 每日任务访问
+│   │   │   └── SystemConfigRepository.java   # 系统配置访问
+│   │   ├── entity/
+│   │   │   ├── User.java                     # 用户实体
+│   │   │   ├── Map.java                      # 地图实体
+│   │   │   ├── Transaction.java              # 交易记录实体
+│   │   │   ├── DailyTaskLog.java             # 每日任务实体
+│   │   │   └── SystemConfig.java             # 系统配置实体
+│   │   ├── dto/
+│   │   │   ├── ApiResponse.java              # 统一响应格式
+│   │   │   └── auth/
+│   │   │       ├── RegisterRequest.java      # 注册请求 DTO
+│   │   │       ├── LoginRequest.java         # 登录请求 DTO
+│   │   │       └── AuthResponse.java         # 认证响应 DTO
+│   │   ├── security/
+│   │   │   ├── JwtTokenProvider.java         # JWT Token 生成/验证
+│   │   │   └── JwtAuthenticationFilter.java  # JWT 认证过滤器
+│   │   ├── exception/
+│   │   │   ├── GlobalExceptionHandler.java   # 全局异常处理
+│   │   │   └── BusinessException.java        # 业务异常类
+│   │   └── util/
+│   │       └── InviteCodeGenerator.java      # 邀请码生成工具
+│   └── resources/
+│       ├── application.yml                    # 主配置文件
+│       ├── application-dev.yml                # 开发环境配置
+│       └── application-prod.yml               # 生产环境配置
+└── README.md                                  # 项目文档
 ```
 
-## 开发进度
 
-- [x] 项目初始化
-- [x] 数据库设计 (PostgreSQL)
-- [x] 用户认证 (注册/登录)
-- [x] JWT 认证
-- [x] 基础实体和仓库
-- [x] 用户中心功能 (个人资料、修改密码、修改邮箱)
-- [x] 每日签到
-- [ ] 等级系统
-- [ ] 地图上传与管理
-- [ ] 后台管理
+## 功能模块详细设计
+
+### 用户与认证模块 (User & Auth)
+- **注册**:
+  - 校验注册开关 (`system_configs`)
+  - 校验邮箱后缀白名单 (`system_configs`)
+  - 校验同IP单日注册限制
+  - 生成唯一 `invite_code`
+  - 密码 bcrypt 加密
+- **登录**: JWT 签发 token
+- **个人中心**:
+  - 编辑资料 (昵称, 头像, 简介) - 用户名不可改
+  - 安全中心 (修改邮箱/密码, 注销申请)
+  - 邀请码逻辑: 填写邀请码，双方获利 (事务处理: 更新 `users` 表的 drops/lightning, 记录 `transactions`)
+
+### 等级与考试模块 (Level & Exam)
+- **等级系统**:
+  - 经验值(闪电)阈值判定
+  - Lv0 -> Lv1 考试逻辑
+- **考试**:
+  - 获取随机题目 (从 `exam_questions` 表)
+  - 提交答案 -> 计算分数 -> 若 >= 60 -> 更新等级 -> 记录 `exam_attempts`
+
+### 签到与任务系统 (Checked & Tasks
+- **每日签到**:
+  - 检查 `daily_task_logs.is_checked_in`
+  - 随机算法 -> 更新 `users.drops` -> 记录 `transactions` -> 更新 `daily_task_logs`
+- **每日任务**:
+  - 监听相关动作 (登录, 浏览, 点赞, 打赏)
+  - 检查 `daily_task_logs` 对应计数
+  - 若未达上限 -> 发放奖励 -> 更新计数与资产 -> 记录日志
+
+### 地图创作与管理 (Map & Creator)
+- **创作者申请**:
+  - 校验条件 (Lv1+, 注册>3天, 邮箱验证) -> 插入 `creator_applications`
+- **地图上传**:
+  - 校验角色 (creator/admin)
+  - 原创/转载区分校验
+  - 文件上传至存储 -> 记录 `maps` 表 (status='pending')
+- **地图互动**:
+  - **浏览**: 计数 + 触发每日任务
+  - **点赞**: 唯一性校验 (`map_likes`) + 触发作者奖励 + 触发每日任务
+  - **收藏**: `map_favorites`
+  - **下载**:
+    - 检查 `map_downloads` (当日是否已买)
+    - 若未买 -> 扣除用户水滴 -> 记录 `map_downloads` -> 记录 `transactions`
+    - 返回下载链接
+  - **打赏**: 扣除水滴 -> 增加作者水滴 (扣税/分成逻辑) -> 记录 `map_donations`
+
+### 后台管理 (Admin)
+- **基础管理**:
+  - 用户管理 (封禁/解封, 修改角色, 打标签)
+  - 系统配置 (`system_configs`: 注册开关, 邮箱后缀, IP限制等)
+  - SMTP配置 (`smtp_configs`: 轮询逻辑)
+- **审核**:
+  - 地图审核 (通过/驳回)
+  - 举报处理 (核实/无违规) -> 若核实则奖励举报者
+
+## 数据库交互说明
+使用 Spring Data JPA + Hibernate 进行 ORM 操作。
+- 将现有 MySQL schema.sql 迁移为 PostgreSQL 语法
+- 使用 JPA 注解定义实体类映射
+- 复杂事务 (如打赏、下载扣费) 使用 `@Transactional` 注解保证数据一致性
+- 使用 PostgreSQL 特性: JSONB类型、序列、索引优化
+
+## API设计规范
+
+### RESTful风格
+- **用户认证**: `/api/auth/*` (register, login, logout)
+- **用户中心**: `/api/user/*` (profile, security, tasks, favorites)
+- **地图管理**: `/api/maps/*` (upload, list, detail, download)
+- **创作中心**: `/api/creator/*` (apply, manage)
+- **后台管理**: `/api/admin/*` (users, maps, reports, system)
+
+### 安全机制
+- JWT Token 认证 (Header: `Authorization: Bearer <token>`)
+- 角色权限控制 (USER, CREATOR, ADMIN)
+- 接口限流 (防止恶意请求)
+- CORS 配置 (允许前端跨域访问)
+
+## 开发进度
+以下功能已设计但尚未实现，需要继续开发：
+
+### 用户中心模块
+- [x] 个人资料编辑 (昵称、头像、简介)
+- [x] 查看个人信息
+- [x] 修改邮箱
+- [x] 修改密码
+- [ ] 申请注销账号
+- [ ] 查看我的收藏
+- [ ] 查看我的等级和经验
+- [ ] 查看邀请记录
+
+### 每日签到与任务
+- [x] 每日签到 (固定/随机水滴)
+- [ ] 每日登录奖励 (10闪电)
+- [ ] 每日浏览地图奖励 (1闪电/张，上限5张)
+- [ ] 每日点赞奖励 (2闪电/张，上限5张)
+- [ ] 每日打赏奖励 (5闪电/滴，上限5滴)
+- [ ] 查看任务进度
+
+### 等级与考试
+- [ ] 获取考试题目 (随机100题)
+- [ ] 提交考试答案
+- [ ] 查看考试历史
+- [ ] 题库管理 (管理员)
+
+### 地图管理
+- [ ] 地图列表 (分页、筛选、排序)
+- [ ] 地图详情
+- [ ] 地图上传 (原创/转载)
+- [ ] 地图编辑
+- [ ] 地图删除
+- [ ] 地图浏览计数
+- [ ] 地图点赞/取消点赞
+- [ ] 地图收藏/取消收藏
+- [ ] 地图下载 (扣费逻辑)
+- [ ] 地图打赏
+- [ ] 我的地图管理
+
+### 创作者功能
+- [ ] 申请成为创作者
+- [ ] 查看申请状态
+- [ ] 创作者地图管理
+- [ ] 收益统计
+
+### 后台管理
+- [ ] 用户管理 (列表、封禁、解封、修改角色、打标签)
+- [ ] 地图审核 (通过/驳回)
+- [ ] 举报处理
+- [ ] 系统配置管理
+- [ ] SMTP 配置管理
+- [ ] 公告管理
+- [ ] 通知管理
+- [ ] 数据统计
+
+### 其他功能
+- [ ] 文件上传服务 (地图文件、图片)
+- [ ] 邮件发送服务 (验证码、通知)
+- [ ] 定时任务 (每日重置、SMTP 计数重置)
+- [ ] 举报功能
+- [ ] 通知系统
 
 ## 许可证
 
