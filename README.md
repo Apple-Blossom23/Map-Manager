@@ -53,13 +53,13 @@ mvn clean package
 java -jar target/map-workshop-backend-1.0.0.jar --spring.profiles.active=dev
 ```
 
-服务默认将在 `http://localhost:8080` 启动，API路径默认为 `/api`。
+服务默认将在 `http://localhost:8080` 启动，API路径默认为 `/api`
 
 
 ## 项目结构
 
 ```
-├── pom.xml                                    # Maven 依赖配置
+├── pom.xml                                   # Maven 依赖配置
 ├── src/main/
 │   ├── java/com/workshop/
 │   │   ├── WorkshopApplication.java          # Spring Boot 启动类
@@ -98,10 +98,10 @@ java -jar target/map-workshop-backend-1.0.0.jar --spring.profiles.active=dev
 │   │   └── util/
 │   │       └── InviteCodeGenerator.java      # 邀请码生成工具
 │   └── resources/
-│       ├── application.yml                    # 主配置文件
-│       ├── application-dev.yml                # 开发环境配置
-│       └── application-prod.yml               # 生产环境配置
-└── README.md                                  # 项目文档
+│       ├── application.yml                   # 主配置文件
+│       ├── application-dev.yml               # 开发环境配置
+│       └── application-prod.yml              # 生产环境配置
+└── README.md                                 # 项目文档
 ```
 
 
